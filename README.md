@@ -1,7 +1,7 @@
 
 # composer-maven-plugin
 
-PHP Composer maven plugin for running composer.phar install or action jobs for a PHP composer project.
+PHP Composer maven plugin for running composer.phar install or update actions for a PHP composer project.
 
 Add this plugin as a plugin dependency to your Maven projects to install composer
 dependencies found in a composer.json file
