@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -71,13 +72,11 @@ abstract public class AbstractComposerMojo extends AbstractMojo
     @Parameter(defaultValue = "${project.build.outputDirectory}/composer.json")
     private String composerJsonPath = null;
 
-    @Parameter(defaultValue = "false")
-    private boolean withDev;
+    @Parameter
+    private boolean withDev = false;
 
-    @Parameter(defaultValue = "true")
-    private boolean withOptimisedAutoloader;
-
-
+    @Parameter
+    private boolean withOptimisedAutoloader = true;
 
     /**
      * Set PHP path
@@ -164,7 +163,7 @@ abstract public class AbstractComposerMojo extends AbstractMojo
      *
      * @return boolean
      */
-    public boolean isWithDev()
+    public boolean getWithDev()
     {
         return this.withDev;
     }
@@ -184,7 +183,7 @@ abstract public class AbstractComposerMojo extends AbstractMojo
      *
      * @return boolean
      */
-    public boolean isWithOptimisedAutoloader()
+    public boolean getWithOptimisedAutoloader()
     {
         return this.withOptimisedAutoloader;
     }
@@ -244,18 +243,17 @@ abstract public class AbstractComposerMojo extends AbstractMojo
                 .getCanonicalPath()
         ;
 
-        List<String> commandArgs = Arrays.asList(
-                this.getPhpPath(),
-                composerPhar,
-                "--no-interaction",
-                "--working-dir=" + workingPath
-        );
+        ArrayList<String> commandArgs = new ArrayList<String>();
+        commandArgs.add(this.getPhpPath());
+        commandArgs.add(composerPhar);
+        commandArgs.add("--no-interaction");
+        commandArgs.add("--working-dir=" + workingPath);
 
-        if ( ! this.isWithDev()) {
+        if ( ! this.getWithDev()) {
             commandArgs.add("--no-dev");
         }
 
-        if (this.isWithOptimisedAutoloader()) {
+        if (this.getWithOptimisedAutoloader()) {
             commandArgs.add("--optimize-autoloader");
         }
 
