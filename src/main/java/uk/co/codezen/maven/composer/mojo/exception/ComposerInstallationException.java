@@ -1,5 +1,7 @@
 package uk.co.codezen.maven.composer.mojo.exception;
 
+import java.util.List;
+
 /**
  * Failed to install composer
  */
@@ -31,7 +33,7 @@ final public class ComposerInstallationException extends Exception
      * @param commandArgs Exception message
      * @param workingDirectory Working directory
      */
-    public ComposerInstallationException(String[] commandArgs, String workingDirectory)
+    public ComposerInstallationException(List<String> commandArgs, String workingDirectory)
     {
         String arguments = null;
 

@@ -31,6 +31,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Abstract composer
@@ -68,6 +70,12 @@ abstract public class AbstractComposerMojo extends AbstractMojo
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/composer.json")
     private String composerJsonPath = null;
+
+    @Parameter(defaultValue = "false")
+    private boolean withDev;
+
+    @Parameter(defaultValue = "true")
+    private boolean withOptimisedAutoloader;
 
 
 
@@ -152,6 +160,46 @@ abstract public class AbstractComposerMojo extends AbstractMojo
     }
 
     /**
+     * Will composer include dev dependencies
+     *
+     * @return boolean
+     */
+    public boolean isWithDev()
+    {
+        return this.withDev;
+    }
+
+    /**
+     * Set if composer should include dev dependencies
+     *
+     * @param withDev With development dependencies
+     */
+    public void setWithDev(boolean withDev)
+    {
+        this.withDev = withDev;
+    }
+
+    /**
+     * Will composer include autoloader optimisations
+     *
+     * @return boolean
+     */
+    public boolean isWithOptimisedAutoloader()
+    {
+        return this.withOptimisedAutoloader;
+    }
+
+    /**
+     * Set if composer should include autoloader optimisations
+     * *
+     * @param withOptimisedAutoloader With autoloader optimisations
+     */
+    public void setWithOptimisedAutoloader(boolean withOptimisedAutoloader)
+    {
+        this.withOptimisedAutoloader = withOptimisedAutoloader;
+    }
+
+    /**
      * Get error stream output file
      *
      * @return Error stream output file
@@ -196,8 +244,23 @@ abstract public class AbstractComposerMojo extends AbstractMojo
                 .getCanonicalPath()
         ;
 
-        String[] commandArgs = new String[] {this.getPhpPath(), composerPhar, "--no-interaction",
-                "--working-dir=" + workingPath, composerAction};
+        List<String> commandArgs = Arrays.asList(
+                this.getPhpPath(),
+                composerPhar,
+                "--no-interaction",
+                "--working-dir=" + workingPath
+        );
+
+        if ( ! this.isWithDev()) {
+            commandArgs.add("--no-dev");
+        }
+
+        if (this.isWithOptimisedAutoloader()) {
+            commandArgs.add("--optimize-autoloader");
+        }
+
+        commandArgs.add(composerAction);
+
         if (0 != this.runCommand(commandArgs, ".")) {
             throw new ComposerExecutionException(commandArgs, ".");
         }
@@ -259,8 +322,8 @@ abstract public class AbstractComposerMojo extends AbstractMojo
         // Execute the installer to create the phar
         String composerInstaller = composerInstallerFile.getCanonicalPath();
         this.getLog().debug(String.format("Running downloaded composer installer %s", composerInstaller));
-        String[] commandArgs = new String[] {this.getPhpPath(), composerInstaller};
-        if (0 != this.runCommand(commandArgs, composerDirectory)) {
+        List<String> commandArgs = Arrays.asList(this.getPhpPath(), composerInstaller);
+        if (0 != this.runCommand(Arrays.asList(this.getPhpPath(), composerInstaller), composerDirectory)) {
             throw new ComposerInstallationException(commandArgs, composerDirectory);
         }
     }
@@ -273,9 +336,9 @@ abstract public class AbstractComposerMojo extends AbstractMojo
      * @param workingDirectory Working directory
      * @throws IOException IO problem executing command
      */
-    private int runCommand(String[] command, String workingDirectory) throws IOException
+    private int runCommand(List<String> command, String workingDirectory) throws IOException
     {
-        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        ProcessBuilder processBuilder = new ProcessBuilder(command.toArray(new String[0]));
         processBuilder.directory(new File(workingDirectory));
         processBuilder.redirectError(this.getRedirectErrorFile());
         processBuilder.redirectOutput(this.getRedirectOutputFile());
