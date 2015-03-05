@@ -24,6 +24,15 @@ Add the plugin to the <plugins> section within your pom.xml file.
             <withDev>false</withDev>
             <withOptimisedAutoloader>true</withOptimisedAutoloader>
         </configuration>
+
+        <executions>
+            <execution>
+                <phase>process-resources</phase>
+                <goals>
+                    <goal>install</goal>
+                </goals>
+            </execution>
+        </executions>
     </plugin>
 </plugins>
 ```
