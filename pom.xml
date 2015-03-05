@@ -4,7 +4,7 @@
 
     <groupId>uk.co.codezen</groupId>
     <artifactId>composer-maven-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>maven-plugin</packaging>
 
     <name>Maven composer plugin</name>
