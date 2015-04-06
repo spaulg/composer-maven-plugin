@@ -371,7 +371,7 @@ abstract public class AbstractComposerMojo extends AbstractMojo
                     }
                 }
                 catch(IOException ex) {
-                    // exist on error
+                    // exit on error
                 }
             }
         }).start();
