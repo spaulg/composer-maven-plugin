@@ -27,10 +27,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import uk.co.codezen.maven.composer.mojo.exception.ComposerExecutionException;
 import uk.co.codezen.maven.composer.mojo.exception.ComposerInstallationException;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -336,12 +333,13 @@ abstract public class AbstractComposerMojo extends AbstractMojo
      */
     private int runCommand(List<String> command, String workingDirectory) throws IOException
     {
-        ProcessBuilder processBuilder = new ProcessBuilder(command.toArray(new String[0]));
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
         processBuilder.directory(new File(workingDirectory));
-        processBuilder.redirectError(this.getRedirectErrorFile());
-        processBuilder.redirectOutput(this.getRedirectOutputFile());
-
         Process composerProcess = processBuilder.start();
+
+        // Link Maven stdout/stderr with process
+        pipe(composerProcess.getInputStream(), System.out);
+        pipe(composerProcess.getErrorStream(), System.err);
 
         while (true) {
             try {
@@ -353,5 +351,29 @@ abstract public class AbstractComposerMojo extends AbstractMojo
         }
 
         return composerProcess.exitValue();
+    }
+
+    /**
+     * Links source and destination pipes
+     *
+     * @param src Source
+     * @param dst Destination
+     */
+    private static void pipe(final InputStream src, final PrintStream dst)
+    {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    byte[] buffer = new byte[1024];
+                    for (int n  = 0; n != -1; n = src.read(buffer, 0, 1024)) {
+                        dst.write(buffer, 0, n);
+                    }
+                }
+                catch(IOException ex) {
+                    // exist on error
+                }
+            }
+        }).start();
     }
 }
